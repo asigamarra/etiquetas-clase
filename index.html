@@ -3,183 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamarra - Generador de Etiquetas Pro</title>
+    <title>Gamarra - Etiquetadora Mobile-Ready</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --font-main: 'Helvetica Neue', Arial, sans-serif; }
-        body { font-family: var(--font-main); background: #f0f2f5; margin: 0; padding: 20px; display: flex; gap: 20px; }
+        :root { 
+            --primary: #2c3e50; 
+            --accent: #e67e22; 
+            --bg: #f4f7f6;
+        }
         
-        /* Panel Izquierdo: Formulario */
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 10px;
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Contenedor principal: En PC es fila, en móvil es columna */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        @media (min-width: 768px) {
+            .main-wrapper { flex-direction: row; align-items: flex-start; }
+            body { padding: 40px; }
+        }
+
+        /* Panel de entrada */
         .admin-panel { 
-            background: white; padding: 20px; border-radius: 12px; 
-            width: 350px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-height: 90vh; overflow-y: auto;
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            flex: 1;
         }
-        h2 { font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.85rem; color: #444; }
-        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        h2 { margin-top: 0; color: var(--primary); font-size: 1.2rem; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 0.9rem; }
         
-        .allergen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
-        .allergen-item { font-size: 0.75rem; display: flex; align-items: center; gap: 5px; }
-        .allergen-item input { width: auto; margin: 0; }
-
-        button.print-btn { 
-            width: 100%; background: #27ae60; color: white; border: none; 
-            padding: 15px; margin-top: 20px; border-radius: 6px; 
-            font-weight: bold; cursor: pointer; font-size: 1rem;
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin-top: 5px; 
+            border: 1px solid #ccc; border-radius: 8px; 
+            font-size: 16px; /* Evita zoom automático en iPhone */
+            box-sizing: border-box;
         }
 
-        /* Panel Derecho: Vista Previa (62mm x 100mm) */
+        /* Alérgenos táctiles */
+        .allergen-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 10px; margin-top: 10px; 
+        }
+        .allergen-item { 
+            background: var(--bg); padding: 10px; border-radius: 6px;
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+        .allergen-item input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
+
+        .print-btn { 
+            width: 100%; background: var(--primary); color: white; border: none; 
+            padding: 18px; margin-top: 25px; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; font-size: 1.1rem;
+            box-shadow: 0 4px 0 #1a252f;
+        }
+        .print-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #1a252f; }
+
+        /* VISTA PREVIA ETIQUETA (62x100mm) */
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 0 0 auto;
+        }
+
         #label-preview {
             width: 62mm; height: 100mm;
             background: white; border: 1px solid #000;
-            padding: 2mm; box-sizing: border-box;
+            padding: 3mm; box-sizing: border-box;
             display: flex; flex-direction: column;
-            position: sticky; top: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
-        .label-header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2mm; }
-        .label-header img { max-width: 90%; height: auto; }
+        .label-header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2mm; margin-bottom: 2mm; }
+        .label-header img { max-width: 80%; max-height: 12mm; object-fit: contain; }
         
         .product-name { 
-            text-align: center; font-weight: 900; font-size: 14pt; 
-            margin: 2mm 0; line-height: 1.1; text-transform: uppercase;
+            text-align: center; font-weight: 900; font-size: 13pt; 
+            margin-bottom: 2mm; line-height: 1.1; text-transform: uppercase;
+            min-height: 26pt; display: flex; align-items: center; justify-content: center;
         }
         
-        .section-title { font-weight: bold; font-size: 9pt; border-bottom: 1px solid #000; margin-bottom: 1mm; text-transform: uppercase; }
-        .regeneration-box { font-size: 8pt; margin-bottom: 2mm; flex-grow: 0; }
+        .section-title { font-weight: bold; font-size: 8pt; border-bottom: 1px solid #000; margin-bottom: 1mm; text-transform: uppercase; }
+        .reg-text { font-size: 8pt; line-height: 1.2; margin-bottom: 3mm; white-space: pre-wrap; }
         
-        .lot-exp-box { display: flex; justify-content: space-between; font-size: 8pt; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 1mm 0; }
+        .lot-exp { display: flex; justify-content: space-between; font-size: 7pt; border-top: 1px solid #000; padding: 1mm 0; font-family: monospace; }
         
-        .allergens-box { margin-top: 2mm; }
         .allergens-icons { 
-            display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 1mm;
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin: 1mm 0;
         }
-        .allergen-icon { width: 8mm; height: 8mm; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 12pt; position: relative; }
-        .allergen-icon.active::after { content: '❌'; position: absolute; font-size: 10pt; color: red; }
+        .allergen-icon { 
+            width: 8mm; height: 8mm; border: 1px solid #ddd; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 11pt; position: relative; 
+        }
+        .allergen-icon.active::after { content: '✕'; position: absolute; font-size: 12pt; color: red; font-weight: bold; }
 
-        .footer-qr { 
-            margin-top: auto; display: flex; align-items: center; gap: 5px; 
+        .label-footer { 
+            margin-top: auto; display: flex; align-items: center; gap: 8px; 
             border-top: 1px solid #000; padding-top: 2mm;
         }
-        #qrcode { width: 20mm; height: 20mm; }
-        .qr-text { font-size: 6pt; line-height: 1.2; font-weight: bold; text-transform: uppercase; }
+        #qrcode { background: white; padding: 2px; }
+        .qr-info { font-size: 6pt; font-weight: bold; line-height: 1.2; }
 
-        /* Ajustes de Impresión */
+        /* IMPRESIÓN */
         @media print {
-            body { background: white; padding: 0; }
-            .admin-panel { display: none; }
+            body { background: white; padding: 0; margin: 0; }
+            .admin-panel, h2, .preview-container > span { display: none !important; }
             #label-preview { 
-                position: absolute; left: 0; top: 0; margin: 0; border: none;
-                width: 62mm; height: 100mm;
+                position: fixed; top: 0; left: 0; margin: 0; border: none; 
+                width: 62mm; height: 100mm; box-shadow: none;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="admin-panel">
-        <h2>Configuración Gamarra</h2>
-        
-        <label>Nombre del Plato:</label>
-        <input type="text" id="in-plato" oninput="updateLabel()" placeholder="Ej: TIKKA MASALA VEGETARIANO">
-        
-        <label>Regeneración (Pasos):</label>
-        <textarea id="in-reg" oninput="updateLabel()" rows="3" placeholder="1. Microondas..."></textarea>
-        
-        <label>Lote / Vencimiento:</label>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="in-lote" oninput="updateLabel()" placeholder="Lote">
-            <input type="text" id="in-venc" oninput="updateLabel()" placeholder="Vence">
-        </div>
-
-        <label>URL Vídeo/Receta (QR):</label>
-        <input type="text" id="in-qr" oninput="updateQR()" placeholder="https://youtube.com/...">
-
-        <label>Alérgenos (Selecciona los presentes):</label>
-        <div class="allergen-grid">
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🌾" onchange="updateLabel()"> Gluten</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🥛" onchange="updateLabel()"> Lácteos</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🥚" onchange="updateLabel()"> Huevos</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🥜" onchange="updateLabel()"> Frutos Secos</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🐟" onchange="updateLabel()"> Pescado</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🦐" onchange="updateLabel()"> Crustáceos</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🫘" onchange="updateLabel()"> Soja</div>
-            <div class="allergen-item"><input type="checkbox" class="alg" value="🌱" onchange="updateLabel()"> Apio</div>
-        </div>
-
-        <button class="print-btn" onclick="window.print()">🖨️ IMPRIMIR ETIQUETA</button>
-    </div>
-
-    <div id="label-preview">
-        <div class="label-header">
-            <img src="logo.png" alt="Gamarra Hostelería" onerror="this.style.display='none'">
-            <div style="font-size: 8pt; font-weight: bold;">OSTALARITZA HOSTELERÍA</div>
-        </div>
-
-        <div class="product-name" id="out-plato">PLATILLO DE PRUEBA</div>
-
-        <div class="section-title">Regeneración</div>
-        <div class="regeneration-box" id="out-reg">Instrucciones de regeneración aquí...</div>
-
-        <div class="lot-exp-box">
-            <span><strong>LOTE:</strong> <span id="out-lote">0000</span></span>
-            <span><strong>VENC:</strong> <span id="out-venc">--/--/--</span></span>
-        </div>
-
-        <div class="allergens-box">
-            <div class="section-title">Alérgenos</div>
-            <div class="allergens-icons" id="out-allergens">
-                <div class="allergen-icon" title="Gluten">🌾</div>
-                <div class="allergen-icon" title="Lácteos">🥛</div>
-                <div class="allergen-icon" title="Huevos">🥚</div>
-                <div class="allergen-icon" title="Frutos Secos">🥜</div>
-                <div class="allergen-icon" title="Pescado">🐟</div>
-                <div class="allergen-icon" title="Crustáceos">🦐</div>
+    <div class="main-wrapper">
+        <div class="admin-panel">
+            <h2>Gamarra Takeaway Pro</h2>
+            
+            <label>Nombre del Plato</label>
+            <input type="text" id="in-plato" oninput="update()" placeholder="Ej: Lasaña de Verduritas">
+            
+            <label>Pasos para Regenerar</label>
+            <textarea id="in-reg" oninput="update()" rows="3" placeholder="1. Calentar 3 min..."></textarea>
+            
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label>Lote</label>
+                    <input type="text" id="in-lote" oninput="update()" placeholder="240513">
+                </div>
+                <div style="flex:1">
+                    <label>Consumo Pref.</label>
+                    <input type="text" id="in-venc" oninput="update()" placeholder="16/05/26">
+                </div>
             </div>
+
+            <label>Link Receta/Vídeo (QR)</label>
+            <input type="url" id="in-qr" oninput="updateQR()" placeholder="https://youtube.com/...">
+
+            <label>Alérgenos Presentes</label>
+            <div class="allergen-grid">
+                <label class="allergen-item"><input type="checkbox" class="alg" value="🌾" onchange="update()"> Gluten</label>
+                <label class="allergen-item"><input type="checkbox" class="alg" value="🥛" onchange="update()"> Lácteos</label>
+                <label class="allergen-item"><input type="checkbox" class="alg" value="🥚" onchange="update()"> Huevos</label>
+                <label class="allergen-item"><input type="checkbox" class="alg" value="🥜" onchange="update()"> F. Secos</label>
+                <label class="allergen-item"><input type="checkbox" class="alg" value="🐟" onchange="update()"> Pescado</label>
+                <label class="allergen-item"><input type="checkbox" class="alg" value="🦐" onchange="update()"> Marisco</label>
+            </div>
+
+            <button class="print-btn" onclick="window.print()">🖨️ IMPRIMIR ETIQUETA</button>
         </div>
 
-        <div class="footer-qr">
-            <div id="qrcode"></div>
-            <div class="qr-text">
-                ESCANEA PARA<br>RECETA E HISTORIA<br>DEL PLATO
+        <div class="preview-container">
+            <span style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">Vista Previa (62x100mm)</span>
+            <div id="label-preview">
+                <div class="label-header">
+                    <img src="logo.png" alt="Gamarra" onerror="this.style.opacity='0'">
+                </div>
+
+                <div class="product-name" id="out-plato">NOMBRE DEL PLATO</div>
+
+                <div class="section-title">Regeneración</div>
+                <div class="reg-text" id="out-reg">Instrucciones...</div>
+
+                <div class="lot-exp">
+                    <span>LOTE: <span id="out-lote">000000</span></span>
+                    <span>VENCE: <span id="out-venc">--/--/--</span></span>
+                </div>
+
+                <div class="section-title" style="margin-top:2mm">Alérgenos</div>
+                <div class="allergens-icons" id="out-allergens">
+                    <div class="allergen-icon">🌾</div>
+                    <div class="allergen-icon">🥛</div>
+                    <div class="allergen-icon">🥚</div>
+                    <div class="allergen-icon">🥜</div>
+                    <div class="allergen-icon">🐟</div>
+                    <div class="allergen-icon">🦐</div>
+                </div>
+
+                <div class="label-footer">
+                    <div id="qrcode"></div>
+                    <div class="qr-info">ESCANEA PARA VER<br>HISTORIA Y RECETA<br>DEL PLATO</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Inicializar el QR
+        // Iniciar QR con URL por defecto
         var qrcode = new QRCode(document.getElementById("qrcode"), {
             text: "https://gamarra.eus",
-            width: 75,
-            height: 75
+            width: 60, height: 60
         });
 
         function updateQR() {
-            var url = document.getElementById('in-qr').value;
-            if(url) {
-                qrcode.clear();
-                qrcode.makeCode(url);
-            }
+            let val = document.getElementById('in-qr').value;
+            if(val) { qrcode.clear(); qrcode.makeCode(val); }
         }
 
-        function updateLabel() {
-            // Textos
-            document.getElementById('out-plato').innerText = document.getElementById('in-plato').value || "NOMBRE DEL PLATO";
-            document.getElementById('out-reg').innerText = document.getElementById('in-reg').value || "Instrucciones...";
-            document.getElementById('out-lote').innerText = document.getElementById('in-lote').value || "----";
-            document.getElementById('out-venc').innerText = document.getElementById('in-venc').value || "--/--";
+        function update() {
+            document.getElementById('out-plato').innerText = document.getElementById('in-plato').value.toUpperCase() || "NOMBRE DEL PLATO";
+            document.getElementById('out-reg').innerText = document.getElementById('in-reg').value || "Instrucciones de regeneración...";
+            document.getElementById('out-lote').innerText = document.getElementById('in-lote').value || "000000";
+            document.getElementById('out-venc').innerText = document.getElementById('in-venc').value || "--/--/--";
 
-            // Alérgenos
-            const checkboxes = document.querySelectorAll('.alg');
+            const checks = document.querySelectorAll('.alg');
             const icons = document.querySelectorAll('.allergen-icon');
-            
-            checkboxes.forEach((cb, index) => {
-                if(cb.checked) {
-                    icons[index].classList.add('active');
-                } else {
-                    icons[index].classList.remove('active');
-                }
+            checks.forEach((c, i) => {
+                if(c.checked) icons[i].classList.add('active');
+                else icons[i].classList.remove('active');
             });
         }
     </script>
