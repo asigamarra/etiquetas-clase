@@ -2,89 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Etiquetas - Dirección de Cocina</title>
+    <title>Generador de Etiquetas de Cocina</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; width: 100%; }
-        h1 { color: var(--primary); text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; margin-top: 25px; border-radius: 8px; font-size: 18px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #1a252f; }
+        body { font-family: sans-serif; padding: 20px; background: #eee; }
+        .formulario { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; border: 1px solid #ccc; }
+        input, select, textarea { width: 100%; margin-bottom: 15px; padding: 10px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 5px; }
         
-        /* DISEÑO DE LA ETIQUETA */
-        #etiqueta-area { display: none; margin-top: 30px; border: 2px dashed #ccc; padding: 20px; background: #fff; width: 300px; }
-        .etiqueta-box { border: 2px solid #000; padding: 15px; text-align: center; }
-        .etiqueta-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; text-transform: uppercase; font-weight: bold; }
-        .metodo-icon { font-size: 40px; margin: 10px 0; }
+        /* Área de la etiqueta que se verá al imprimir */
+        #etiqueta-final { margin-top: 30px; border: 2px solid black; padding: 20px; background: white; width: 300px; margin-left: auto; margin-right: auto; text-align: center; }
         
-        /* ESTILOS DE IMPRESIÓN */
         @media print {
-            body * { visibility: hidden; background: white !important; }
-            #etiqueta-area, #etiqueta-area * { visibility: visible; }
-            #etiqueta-area { display: block !important; position: absolute; left: 0; top: 0; border: none; }
-            .container { display: none; }
+            .formulario { display: none; }
+            body { background: white; }
+            #etiqueta-final { border: 2px solid black; position: absolute; top: 0; left: 0; margin: 0; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🏷️ Generador de Etiquetas Takeaway</h1>
-    
-    <label>Nombre del Plato</label>
-    <input type="text" id="plato" placeholder="Ej: Lasaña de Cordero">
-    
-    <label>Método de Regeneración</label>
-    <select id="metodo">
-        <option value="♨️ MICROONDAS">Microondas</option>
-        <option value="🍱 HORNO">Horno</option>
-        <option value="🍳 SARTÉN/OLLA">Sartén / Olla</option>
-        <option value="❄️ CONSUMO FRÍO">Consumo en Frío</option>
-    </select>
-    
-    <label>Tiempo y Temperatura</label>
-    <input type="text" id="parametros" placeholder="Ej: 3 min a 800W / 10 min a 180°C">
-    
-    <label>Consejo del Chef (Emplatado)</label>
-    <textarea id="consejo" rows="2" placeholder="Ej: Añadir el crujiente al final..."></textarea>
+    <div class="formulario">
+        <h2>🏷️ Datos del Plato</h2>
+        
+        <label>Nombre del Plato:</label>
+        <input type="text" id="in-plato" oninput="actualizar()" placeholder="Ej: Canelones">
+        
+        <label>Método:</label>
+        <select id="in-metodo" onchange="actualizar()">
+            <option value="♨️ MICROONDAS">Microondas</option>
+            <option value="🍱 HORNO">Horno</option>
+            <option value="🍳 SARTÉN">Sartén</option>
+            <option value="❄️ FRÍO">Consumo en Frío</option>
+        </select>
+        
+        <label>Instrucciones (Tiempo/Temp):</label>
+        <input type="text" id="in-instru" oninput="actualizar()" placeholder="3 min a 800W">
+        
+        <label>Nota del Chef:</label>
+        <textarea id="in-nota" oninput="actualizar()" placeholder="Añadir queso fresco al servir..."></textarea>
 
-    <button onclick="window.print()">🖨️ IMPRIMIR ETIQUETA</button>
-</div>
-
-<div id="etiqueta-area">
-    <div class="etiqueta-box">
-        <div class="etiqueta-header">Instrucciones de Servicio</div>
-        <h2 id="print-plato">Nombre del Plato</h2>
-        <div class="metodo-icon" id="print-icono">♨️</div>
-        <p><strong>REGENERAR EN:</strong> <span id="print-metodo">MÉTODO</span></p>
-        <p><strong>AJUSTES:</strong> <span id="print-parametros">PARÁMETROS</span></p>
-        <hr>
-        <p><small id="print-consejo">Consejo del chef</small></p>
-        <p style="font-size: 10px; margin-top: 15px;">Módulo: Gestión de la Producción</p>
+        <button onclick="window.print()">🖨️ IMPRIMIR ETIQUETA</button>
     </div>
-</div>
 
-<script>
-    // Esta parte actualiza la etiqueta en tiempo real mientras escriben
-    const inputs = ['plato', 'metodo', 'parametros', 'consejo'];
-    inputs.forEach(id => {
-        document.getElementById(id).addEventListener('input', () => {
-            const val = document.getElementById(id).value;
-            if(id === 'metodo') {
-                const icono = val.split(' ')[0];
-                const texto = val.split(' ')[1];
-                document.getElementById('print-icono').innerText = icono;
-                document.getElementById('print-metodo').innerText = texto;
-            } else {
-                document.getElementById('print-' + id).innerText = val;
-            }
-            document.getElementById('etiqueta-area').style.display = 'block';
-        });
-    });
-</script>
+    <div id="etiqueta-final">
+        <h3 id="out-plato">Nombre del Plato</h3>
+        <hr>
+        <p><strong>MODO:</strong> <span id="out-metodo">♨️ MICROONDAS</span></p>
+        <p><strong>PASOS:</strong> <span id="out-instru">...</span></p>
+        <p><em><span id="out-nota">...</span></em></p>
+        <hr>
+        <p style="font-size: 10px;">Gestión de la Producción - Takeaway</p>
+    </div>
+
+    <script>
+        function actualizar() {
+            document.getElementById('out-plato').innerText = document.getElementById('in-plato').value || "Nombre del Plato";
+            document.getElementById('out-metodo').innerText = document.getElementById('in-metodo').value;
+            document.getElementById('out-instru').innerText = document.getElementById('in-instru').value || "...";
+            document.getElementById('out-nota').innerText = document.getElementById('in-nota').value || "...";
+        }
+    </script>
 
 </body>
 </html>
