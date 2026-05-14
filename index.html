@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamarra - Generador de Etiquetas Pro</title>
+    <title>Gamarra - Control de Producción</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
@@ -93,7 +93,20 @@
         
         .reg-text { font-size: 8pt; line-height: 1.1; margin-bottom: 2mm; white-space: pre-wrap; flex-grow: 1; }
         
-        /* Iconos Alérgenos: Ajustado a 5 columnas para evitar desbordamiento */
+        /* Caja de Fechas */
+        .dates-box {
+            display: flex;
+            justify-content: space-between;
+            font-size: 7.5pt;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 1.5mm 0;
+            margin-bottom: 1mm;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* Iconos Alérgenos */
         .allergens-icons-wrapper { 
             display: grid; 
             grid-template-columns: repeat(5, 1fr); 
@@ -129,11 +142,23 @@
 <div class="main-wrapper">
     <div class="admin-panel">
         <h2>Gamarra - Gestión de Producción</h2>
+        
         <label>Nombre del Plato</label>
-        <input type="text" id="in-plato" oninput="update()" placeholder="Ej: Marmitako de Atún">
+        <input type="text" id="in-plato" oninput="update()" placeholder="Ej: Lasaña de Carne">
         
         <label>Instrucciones de Regeneración</label>
-        <textarea id="in-reg" oninput="update()" rows="3" placeholder="1. Calentar..."></textarea>
+        <textarea id="in-reg" oninput="update()" rows="2" placeholder="Instrucciones..."></textarea>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1">
+                <label>Fecha Producción</label>
+                <input type="date" id="in-prod" oninput="update()">
+            </div>
+            <div style="flex:1">
+                <label>Fecha Caducidad</label>
+                <input type="date" id="in-cad" oninput="update()">
+            </div>
+        </div>
 
         <label>URL Receta / Vídeo (QR)</label>
         <input type="text" id="in-qr" oninput="updateQR()" placeholder="https://youtube.com/...">
@@ -171,22 +196,27 @@
             <div class="section-title">Regeneración</div>
             <div class="reg-text" id="out-reg">Instrucciones de servicio...</div>
 
+            <div class="dates-box">
+                <span>ELAB: <span id="out-prod">--/--/--</span></span>
+                <span>CAD: <span id="out-cad">--/--/--</span></span>
+            </div>
+
             <div class="section-title">Información de Alérgenos</div>
             <div class="allergens-icons-wrapper" id="out-allergens">
-                <div class="allergen-icon" title="Gluten">🌾</div>
-                <div class="allergen-icon" title="Crustáceos">🦐</div>
-                <div class="allergen-icon" title="Huevos">🥚</div>
-                <div class="allergen-icon" title="Pescado">🐟</div>
-                <div class="allergen-icon" title="Cacahuetes">🥜</div>
-                <div class="allergen-icon" title="Soja">🫘</div>
-                <div class="allergen-icon" title="Lácteos">🥛</div>
-                <div class="allergen-icon" title="Frutos Cáscara">🌰</div>
-                <div class="allergen-icon" title="Apio">🌱</div>
-                <div class="allergen-icon" title="Mostaza">🌭</div>
-                <div class="allergen-icon" title="Sésamo">🍪</div>
-                <div class="allergen-icon" title="Sulfitos">🧪</div>
-                <div class="allergen-icon" title="Altramuces">🌼</div>
-                <div class="allergen-icon" title="Moluscos">🐚</div>
+                <div class="allergen-icon">🌾</div>
+                <div class="allergen-icon">🦐</div>
+                <div class="allergen-icon">🥚</div>
+                <div class="allergen-icon">🐟</div>
+                <div class="allergen-icon">🥜</div>
+                <div class="allergen-icon">🫘</div>
+                <div class="allergen-icon">🥛</div>
+                <div class="allergen-icon">🌰</div>
+                <div class="allergen-icon">🌱</div>
+                <div class="allergen-icon">🌭</div>
+                <div class="allergen-icon">🍪</div>
+                <div class="allergen-icon">🧪</div>
+                <div class="allergen-icon">🌼</div>
+                <div class="allergen-icon">🐚</div>
             </div>
 
             <div class="label-footer">
@@ -198,6 +228,39 @@
 </div>
 
 <script>
-    // Configuración inicial del QR
     var qrcode = new QRCode(document.getElementById("qrcode"), {
-        text: "https://
+        text: "https://gamarra.eus",
+        width: 60,
+        height: 60
+    });
+
+    function updateQR() {
+        var url = document.getElementById('in-qr').value;
+        if(url) { qrcode.clear(); qrcode.makeCode(url); }
+    }
+
+    // Función para formatear la fecha de AAAA-MM-DD a DD/MM/AAAA
+    function formatDate(dateStr) {
+        if(!dateStr) return "--/--/--";
+        const parts = dateStr.split("-");
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function update() {
+        document.getElementById('out-plato').innerText = document.getElementById('in-plato').value.toUpperCase() || "NOMBRE DEL PLATO";
+        document.getElementById('out-reg').innerText = document.getElementById('in-reg').value || "Instrucciones...";
+        
+        // Actualizar fechas
+        document.getElementById('out-prod').innerText = formatDate(document.getElementById('in-prod').value);
+        document.getElementById('out-cad').innerText = formatDate(document.getElementById('in-cad').value);
+        
+        const checks = document.querySelectorAll('.alg');
+        const icons = document.querySelectorAll('.allergen-icon');
+        checks.forEach((c, i) => {
+            if(c.checked) icons[i].classList.add('active');
+            else icons[i].classList.remove('active');
+        });
+    }
+</script>
+</body>
+</html>
