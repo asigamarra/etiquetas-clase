@@ -171,4 +171,95 @@
             <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🥚 Huevos</label>
             <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🐟 Pescado</label>
             <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🥜 Cacahuetes</label>
-            <label class="allergen-item"><input type="checkbox" class="alg" on
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🫘 Soja</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🥛 Lácteos</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🌰 F. Cáscara</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🌱 Apio</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🌭 Mostaza</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🍪 Sésamo</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🧪 Sulfitos</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🌼 Altramuces</label>
+            <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🐚 Moluscos</label>
+        </div>
+
+        <button class="print-btn" onclick="window.print()">🖨️ IMPRIMIR ETIQUETA</button>
+    </div>
+
+    <div class="preview-container">
+        <span style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">Vista Previa (62x100mm)</span>
+        <div id="label-preview">
+            <div class="label-header">
+                <img src="logo.png" alt="Gamarra" onerror="this.style.opacity='0'">
+            </div>
+            
+            <div class="product-name" id="out-plato">NOMBRE DEL PLATO</div>
+            
+            <div class="section-title">Regeneración</div>
+            <div class="reg-text" id="out-reg">Instrucciones de servicio...</div>
+
+            <div class="dates-box">
+                <span>ELAB: <span id="out-prod">--/--/--</span></span>
+                <span>CAD: <span id="out-cad">--/--/--</span></span>
+            </div>
+
+            <div class="section-title">Información de Alérgenos</div>
+            <div class="allergens-icons-wrapper" id="out-allergens">
+                <div class="allergen-icon">🌾</div>
+                <div class="allergen-icon">🦐</div>
+                <div class="allergen-icon">🥚</div>
+                <div class="allergen-icon">🐟</div>
+                <div class="allergen-icon">🥜</div>
+                <div class="allergen-icon">🫘</div>
+                <div class="allergen-icon">🥛</div>
+                <div class="allergen-icon">🌰</div>
+                <div class="allergen-icon">🌱</div>
+                <div class="allergen-icon">🌭</div>
+                <div class="allergen-icon">🍪</div>
+                <div class="allergen-icon">🧪</div>
+                <div class="allergen-icon">🌼</div>
+                <div class="allergen-icon">🐚</div>
+            </div>
+
+            <div class="label-footer">
+                <div id="qrcode"></div>
+                <div class="qr-info">ESCANEAME PARA<br>VER RECETA E<br>HISTORIA DEL PLATO</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: "https://gamarra.eus",
+        width: 60,
+        height: 60
+    });
+
+    function updateQR() {
+        var url = document.getElementById('in-qr').value;
+        if(url) { qrcode.clear(); qrcode.makeCode(url); }
+    }
+
+    function formatDate(dateStr) {
+        if(!dateStr) return "--/--/--";
+        const parts = dateStr.split("-");
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function update() {
+        document.getElementById('out-plato').innerText = document.getElementById('in-plato').value.toUpperCase() || "NOMBRE DEL PLATO";
+        document.getElementById('out-reg').innerText = document.getElementById('in-reg').value || "Instrucciones...";
+        
+        document.getElementById('out-prod').innerText = formatDate(document.getElementById('in-prod').value);
+        document.getElementById('out-cad').innerText = formatDate(document.getElementById('in-cad').value);
+        
+        const checks = document.querySelectorAll('.alg');
+        const icons = document.querySelectorAll('.allergen-icon');
+        checks.forEach((c, i) => {
+            if(c.checked) icons[i].classList.add('active');
+            else icons[i].classList.remove('active');
+        });
+    }
+</script>
+</body>
+</html>
