@@ -3,22 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamarra - Control de Alérgenos</title>
+    <title>Gamarra - Generador de Etiquetas Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #2c3e50; --bg: #f4f7f6; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        :root { 
+            --primary: #2c3e50; 
+            --bg: #f4f7f6; 
+        }
         
-        .main-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1000px; }
-        @media (min-width: 768px) { .main-wrapper { flex-direction: row; align-items: flex-start; } }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
 
-        /* Panel Formulario */
-        .admin-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; }
+        .main-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 1000px; 
+        }
+
+        @media (min-width: 768px) { 
+            .main-wrapper { flex-direction: row; align-items: flex-start; } 
+        }
+
+        /* Panel Formulario (Izquierda) */
+        .admin-panel { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            flex: 1; 
+        }
+
         h2 { margin-top: 0; color: var(--primary); font-size: 1.1rem; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.85rem; }
-        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
 
-        /* Cuadrícula de Alérgenos en Formulario */
         .allergen-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
@@ -30,37 +57,70 @@
         }
         .allergen-item input { width: 18px; height: 18px; margin: 0; }
 
-        .print-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; margin-top: 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .print-btn { 
+            width: 100%; background: var(--primary); color: white; border: none; 
+            padding: 15px; margin-top: 20px; border-radius: 8px; font-weight: bold; cursor: pointer; 
+        }
 
         /* VISTA PREVIA ETIQUETA (62x100mm) */
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         #label-preview {
-            width: 62mm; height: 100mm; background: white; border: 1px solid #000;
-            padding: 2mm; box-sizing: border-box; display: flex; flex-direction: column;
+            width: 62mm; height: 100mm; 
+            background: white; border: 1px solid #000;
+            padding: 2mm; box-sizing: border-box; 
+            display: flex; flex-direction: column;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
-        .label-header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 1mm; margin-bottom: 1mm; }
-        .label-header img { max-width: 80%; max-height: 10mm; }
-        
-        .product-name { text-align: center; font-weight: 900; font-size: 12pt; margin-bottom: 1mm; text-transform: uppercase; }
-        .section-title { font-weight: bold; font-size: 7pt; border-bottom: 1px solid #000; margin-bottom: 1mm; text-transform: uppercase; background: #eee; padding-left: 1mm; }
-        .reg-text { font-size: 7.5pt; line-height: 1.1; margin-bottom: 2mm; white-space: pre-wrap; height: 20mm; overflow: hidden; }
-        
-        /* Iconos Alérgenos en Etiqueta */
-        .allergens-icons-wrapper { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1mm; margin: 1mm 0; }
-        .allergen-icon { 
-            width: 7.5mm; height: 7.5mm; border: 0.5px solid #ccc; border-radius: 2px;
-            display: flex; align-items: center; justify-content: center; font-size: 10pt; position: relative; 
-        }
-        .allergen-icon.active::after { content: '✕'; position: absolute; font-size: 12pt; color: red; font-weight: bold; }
 
-        .label-footer { margin-top: auto; display: flex; align-items: center; gap: 5px; border-top: 1px solid #000; padding-top: 1mm; }
+        .label-header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 1mm; margin-bottom: 1mm; }
+        .label-header img { max-width: 90%; max-height: 12mm; object-fit: contain; }
+        
+        .product-name { 
+            text-align: center; font-weight: 900; font-size: 12pt; 
+            margin-bottom: 1mm; text-transform: uppercase; 
+            min-height: 24pt; display: flex; align-items: center; justify-content: center;
+        }
+        
+        .section-title { 
+            font-weight: bold; font-size: 7pt; border-bottom: 1px solid #000; 
+            margin-bottom: 1mm; text-transform: uppercase; background: #eee; padding-left: 1mm; 
+        }
+        
+        .reg-text { font-size: 8pt; line-height: 1.1; margin-bottom: 2mm; white-space: pre-wrap; flex-grow: 1; }
+        
+        /* Iconos Alérgenos: Ajustado a 5 columnas para evitar desbordamiento */
+        .allergens-icons-wrapper { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 1.5mm; 
+            margin: 1mm 0; 
+            padding: 0 1mm;
+        }
+        
+        .allergen-icon { 
+            width: 8.5mm; height: 8.5mm; border: 0.5px solid #ccc; border-radius: 2px;
+            display: flex; align-items: center; justify-content: center; font-size: 11pt; position: relative; 
+        }
+        .allergen-icon.active::after { 
+            content: '✕'; position: absolute; font-size: 14pt; color: red; font-weight: bold; 
+        }
+
+        .label-footer { 
+            margin-top: auto; display: flex; align-items: center; gap: 8px; 
+            border-top: 1px solid #000; padding-top: 2mm; 
+        }
         #qrcode { background: white; }
-        .qr-info { font-size: 5.5pt; font-weight: bold; line-height: 1.1; }
+        .qr-info { font-size: 6pt; font-weight: bold; line-height: 1.1; text-transform: uppercase; }
 
         @media print {
             body { background: white; padding: 0; }
-            .admin-panel { display: none; }
-            #label-preview { position: fixed; top: 0; left: 0; border: none; box-shadow: none; }
+            .admin-panel, .preview-container > span { display: none; }
+            #label-preview { position: fixed; top: 0; left: 0; border: none; box-shadow: none; width: 62mm; height: 100mm; }
         }
     </style>
 </head>
@@ -68,14 +128,17 @@
 
 <div class="main-wrapper">
     <div class="admin-panel">
-        <h2>Panel de Producción</h2>
-        <label>Plato</label>
-        <input type="text" id="in-plato" oninput="update()" placeholder="Nombre del plato">
+        <h2>Gamarra - Gestión de Producción</h2>
+        <label>Nombre del Plato</label>
+        <input type="text" id="in-plato" oninput="update()" placeholder="Ej: Marmitako de Atún">
         
-        <label>Regeneración</label>
-        <textarea id="in-reg" oninput="update()" rows="2"></textarea>
+        <label>Instrucciones de Regeneración</label>
+        <textarea id="in-reg" oninput="update()" rows="3" placeholder="1. Calentar..."></textarea>
 
-        <label>Alérgenos (Selecciona los presentes en el plato)</label>
+        <label>URL Receta / Vídeo (QR)</label>
+        <input type="text" id="in-qr" oninput="updateQR()" placeholder="https://youtube.com/...">
+
+        <label>Alérgenos Obligatorios (14)</label>
         <div class="allergen-grid">
             <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🌾 Gluten</label>
             <label class="allergen-item"><input type="checkbox" class="alg" onchange="update()"> 🦐 Crustáceos</label>
@@ -96,54 +159,45 @@
         <button class="print-btn" onclick="window.print()">🖨️ IMPRIMIR ETIQUETA</button>
     </div>
 
-    <div id="label-preview">
-        <div class="label-header">
-            <img src="logo.png" alt="Gamarra" onerror="this.style.opacity='0'">
-        </div>
-        <div class="product-name" id="out-plato">NOMBRE DEL PLATO</div>
-        
-        <div class="section-title">Regeneración</div>
-        <div class="reg-text" id="out-reg">Instrucciones...</div>
+    <div class="preview-container">
+        <span style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">Vista Previa (62x100mm)</span>
+        <div id="label-preview">
+            <div class="label-header">
+                <img src="logo.png" alt="Gamarra" onerror="this.style.opacity='0'">
+            </div>
+            
+            <div class="product-name" id="out-plato">NOMBRE DEL PLATO</div>
+            
+            <div class="section-title">Regeneración</div>
+            <div class="reg-text" id="out-reg">Instrucciones de servicio...</div>
 
-        <div class="section-title">Información de Alérgenos</div>
-        <div class="allergens-icons-wrapper" id="out-allergens">
-            <div class="allergen-icon" title="Gluten">🌾</div>
-            <div class="allergen-icon" title="Crustáceos">🦐</div>
-            <div class="allergen-icon" title="Huevos">🥚</div>
-            <div class="allergen-icon" title="Pescado">🐟</div>
-            <div class="allergen-icon" title="Cacahuetes">🥜</div>
-            <div class="allergen-icon" title="Soja">🫘</div>
-            <div class="allergen-icon" title="Lácteos">🥛</div>
-            <div class="allergen-icon" title="Frutos Cáscara">🌰</div>
-            <div class="allergen-icon" title="Apio">🌱</div>
-            <div class="allergen-icon" title="Mostaza">🌭</div>
-            <div class="allergen-icon" title="Sésamo">🍪</div>
-            <div class="allergen-icon" title="Sulfitos">🧪</div>
-            <div class="allergen-icon" title="Altramuces">🌼</div>
-            <div class="allergen-icon" title="Moluscos">🐚</div>
-        </div>
+            <div class="section-title">Información de Alérgenos</div>
+            <div class="allergens-icons-wrapper" id="out-allergens">
+                <div class="allergen-icon" title="Gluten">🌾</div>
+                <div class="allergen-icon" title="Crustáceos">🦐</div>
+                <div class="allergen-icon" title="Huevos">🥚</div>
+                <div class="allergen-icon" title="Pescado">🐟</div>
+                <div class="allergen-icon" title="Cacahuetes">🥜</div>
+                <div class="allergen-icon" title="Soja">🫘</div>
+                <div class="allergen-icon" title="Lácteos">🥛</div>
+                <div class="allergen-icon" title="Frutos Cáscara">🌰</div>
+                <div class="allergen-icon" title="Apio">🌱</div>
+                <div class="allergen-icon" title="Mostaza">🌭</div>
+                <div class="allergen-icon" title="Sésamo">🍪</div>
+                <div class="allergen-icon" title="Sulfitos">🧪</div>
+                <div class="allergen-icon" title="Altramuces">🌼</div>
+                <div class="allergen-icon" title="Moluscos">🐚</div>
+            </div>
 
-        <div class="label-footer">
-            <div id="qrcode"></div>
-            <div class="qr-info">ESCANEAME PARA<br>VER RECETA E<br>HISTORIA DEL PLATO</div>
+            <div class="label-footer">
+                <div id="qrcode"></div>
+                <div class="qr-info">ESCANEAME PARA<br>VER RECETA E<br>HISTORIA DEL PLATO</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    var qrcode = new QRCode(document.getElementById("qrcode"), { text: "https://gamarra.eus", width: 50, height: 50 });
-
-    function update() {
-        document.getElementById('out-plato').innerText = document.getElementById('in-plato').value.toUpperCase() || "NOMBRE DEL PLATO";
-        document.getElementById('out-reg').innerText = document.getElementById('in-reg').value || "Instrucciones...";
-        
-        const checks = document.querySelectorAll('.alg');
-        const icons = document.querySelectorAll('.allergen-icon');
-        checks.forEach((c, i) => {
-            if(c.checked) icons[i].classList.add('active');
-            else icons[i].classList.remove('active');
-        });
-    }
-</script>
-</body>
-</html>
+    // Configuración inicial del QR
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: "https://
